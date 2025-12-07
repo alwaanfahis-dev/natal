@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
   createFloatingDecorations();
   initKeyboardShortcuts();
   initWishCarousel();
-  initMusicPlayer();
   
   // Set initial theme
   updateThemeDisplay();
@@ -127,19 +126,8 @@ function initSnowEffect() {
   }
 }
 
-
 // ================= BUTTON INTERACTIONS =================
 function initButtons() {
-  // Play music button
-  const playMusicBtn = document.getElementById('playMusic');
-  if (playMusicBtn) {
-    playMusicBtn.addEventListener('click', function() {
-      const musicModal = document.getElementById('musicModal');
-      musicModal.classList.add('active');
-      createClickEffect(this, '#f4c95d');
-    });
-  }
-  
   // Toggle lights button
   const toggleLightsBtn = document.getElementById('toggleLights');
   if (toggleLightsBtn) {
@@ -235,13 +223,23 @@ function initTreeInteractions() {
       }, 300);
     });
     
-    // Add hover effect
+    // Add hover effect (for desktop)
     ornament.addEventListener('mouseenter', function() {
       this.style.transform = 'scale(1.1)';
       this.style.transition = 'transform 0.2s ease';
     });
     
     ornament.addEventListener('mouseleave', function() {
+      this.style.transform = 'scale(1)';
+    });
+    
+    // Add touch effect (for mobile)
+    ornament.addEventListener('touchstart', function() {
+      this.style.transform = 'scale(1.1)';
+      this.style.transition = 'transform 0.2s ease';
+    });
+    
+    ornament.addEventListener('touchend', function() {
       this.style.transform = 'scale(1)';
     });
   });
@@ -265,6 +263,12 @@ function initWishCarousel() {
   // Add click events to dots
   dots.forEach((dot, index) => {
     dot.addEventListener('click', () => {
+      showSlide(index);
+    });
+    
+    // Add touch support for mobile
+    dot.addEventListener('touchstart', (e) => {
+      e.preventDefault();
       showSlide(index);
     });
   });
@@ -296,7 +300,7 @@ function showRandomWish() {
   wishElement.style.fontSize = '18px';
   wishElement.style.color = '#f4c95d';
   wishElement.style.textAlign = 'center';
-  wishElement.style.width = '300px';
+  wishElement.style.width = 'min(300px, 90vw)';
   wishElement.style.zIndex = '1000';
   wishElement.style.animation = 'float 3s ease-out forwards';
   
@@ -307,113 +311,6 @@ function showRandomWish() {
       wishElement.remove();
     }
   }, 3000);
-}
-
-// ================= MUSIC PLAYER =================
-function initMusicPlayer() {
-  const musicModal = document.getElementById('musicModal');
-  const closeModal = musicModal.querySelector('.modal-close');
-  const songItems = musicModal.querySelectorAll('.song-item');
-  const playPauseBtn = musicModal.querySelector('#playPauseBtn');
-  const progressFill = musicModal.querySelector('.progress-fill');
-  
-  // Close modal
-  closeModal.addEventListener('click', () => {
-    musicModal.classList.remove('active');
-  });
-  
-  // Close modal when clicking outside
-  musicModal.addEventListener('click', (e) => {
-    if (e.target === musicModal) {
-      musicModal.classList.remove('active');
-    }
-  });
-  
-  // Song selection
-  songItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('play-btn')) {
-        songItems.forEach(s => s.classList.remove('active'));
-        item.classList.add('active');
-        
-        // Update player info
-        const songTitle = item.querySelector('.song-title').textContent;
-        const totalTime = item.querySelector('.song-duration').textContent;
-        document.querySelector('#currentSong').textContent = songTitle;
-        document.querySelector('.total-time').textContent = totalTime;
-        
-        // Start playing
-        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        progressFill.style.width = '0%';
-        
-        // Simulate playing
-        simulateProgress();
-      }
-    });
-    
-    // Play button within song item
-    const playBtn = item.querySelector('.play-btn');
-    playBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      songItems.forEach(s => s.classList.remove('active'));
-      item.classList.add('active');
-      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-      simulateProgress();
-    });
-  });
-  
-  // Play/Pause button
-  let isPlaying = false;
-  playPauseBtn.addEventListener('click', () => {
-    isPlaying = !isPlaying;
-    playPauseBtn.innerHTML = isPlaying 
-      ? '<i class="fas fa-pause"></i>' 
-      : '<i class="fas fa-play"></i>';
-    
-    if (isPlaying) {
-      simulateProgress();
-    }
-  });
-  
-  // Volume control
-  const volumeSlider = document.getElementById('volumeSlider');
-  volumeSlider.addEventListener('input', (e) => {
-    const volumeIcon = volumeSlider.previousElementSibling;
-    const volume = e.target.value;
-    
-    if (volume == 0) {
-      volumeIcon.className = 'fas fa-volume-mute';
-    } else if (volume < 50) {
-      volumeIcon.className = 'fas fa-volume-down';
-    } else {
-      volumeIcon.className = 'fas fa-volume-up';
-    }
-  });
-}
-
-function simulateProgress() {
-  const progressFill = document.querySelector('.progress-fill');
-  const currentTime = document.querySelector('.current-time');
-  const totalTime = document.querySelector('.total-time');
-  
-  let progress = 0;
-  const interval = setInterval(() => {
-    if (progress >= 100) {
-      clearInterval(interval);
-      return;
-    }
-    
-    progress += 0.5;
-    progressFill.style.width = `${progress}%`;
-    
-    // Update time display
-    const totalSeconds = 165; // 2:45 in seconds
-    const currentSeconds = Math.floor(totalSeconds * (progress / 100));
-    const minutes = Math.floor(currentSeconds / 60);
-    const seconds = currentSeconds % 60;
-    currentTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    
-  }, 100);
 }
 
 // ================= NEW FEATURES =================
@@ -477,6 +374,15 @@ function addRandomOrnament() {
   ornament.addEventListener('mouseleave', function() {
     this.style.transform = 'scale(1)';
   });
+  
+  // Touch events for mobile
+  ornament.addEventListener('touchstart', function() {
+    this.style.transform = 'scale(1.1)';
+  });
+  
+  ornament.addEventListener('touchend', function() {
+    this.style.transform = 'scale(1)';
+  });
 }
 
 function shakeChristmasTree() {
@@ -486,7 +392,7 @@ function shakeChristmasTree() {
   tree.style.animation = 'shake 0.5s ease-in-out';
   
   // Create falling ornaments effect
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 5; i++) {
     setTimeout(() => {
       createFallingOrnament();
     }, i * 100);
@@ -508,7 +414,7 @@ function createFallingOrnament() {
   ornament.innerHTML = '🔴';
   ornament.style.left = Math.random() * 100 + 'vw';
   ornament.style.top = '20vh';
-  ornament.style.fontSize = '24px';
+  ornament.style.fontSize = '20px';
   ornament.style.color = colors[Math.floor(Math.random() * colors.length)];
   ornament.style.animation = 'float 2s ease-in forwards';
   
@@ -526,7 +432,7 @@ function createFireworks() {
   const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
   
   // Create multiple fireworks
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     setTimeout(() => {
       createFirework(
         Math.random() * window.innerWidth,
@@ -544,7 +450,7 @@ function createFirework(x, y, color) {
   firework.style.top = y + 'px';
   
   // Create particles
-  const particleCount = 36;
+  const particleCount = 24;
   for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement('div');
     particle.className = 'firework-particle';
@@ -553,7 +459,7 @@ function createFirework(x, y, color) {
     // Calculate direction
     const angle = (i * 360) / particleCount;
     const radians = angle * (Math.PI / 180);
-    const distance = 50 + Math.random() * 50;
+    const distance = 40 + Math.random() * 30;
     
     particle.style.setProperty('--tx', Math.cos(radians) * distance + 'px');
     particle.style.setProperty('--ty', Math.sin(radians) * distance + 'px');
@@ -624,7 +530,7 @@ function playShakeSound() {
 
 // ================= VISUAL EFFECTS =================
 function createSparkleEffect(x, y) {
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 5; i++) {
     setTimeout(() => {
       const sparkle = document.createElement('div');
       sparkle.className = 'floating-decoration';
@@ -639,8 +545,8 @@ function createSparkleEffect(x, y) {
       
       // Random movement
       setTimeout(() => {
-        const moveX = (Math.random() * 100 - 50);
-        const moveY = (Math.random() * -100 - 50);
+        const moveX = (Math.random() * 80 - 40);
+        const moveY = (Math.random() * -80 - 40);
         sparkle.style.transform = `translate(${moveX}px, ${moveY}px)`;
         sparkle.style.opacity = '0';
       }, 10);
@@ -762,7 +668,7 @@ function updateThemeDisplay() {
 function createFloatingDecorations() {
   const decorations = ['🎄', '🎅', '🦌', '⭐', '🔔', '🕯️', '❄️', '🎁'];
   
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 8; i++) {
     setTimeout(() => {
       const decor = document.createElement('div');
       decor.className = 'floating-decoration';
@@ -782,13 +688,6 @@ function createFloatingDecorations() {
 // ================= KEYBOARD SHORTCUTS =================
 function initKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // Space to play music
-    if (e.key === ' ' || e.key === 'Spacebar') {
-      e.preventDefault();
-      const playBtn = document.getElementById('playMusic');
-      if (playBtn) playBtn.click();
-    }
-    
     // S to toggle snow
     if (e.key === 's' || e.key === 'S') {
       const toggleSnowBtn = document.getElementById('toggleSnow');
@@ -812,12 +711,6 @@ function initKeyboardShortcuts() {
       const wishesBtn = document.getElementById('showWishes');
       if (wishesBtn) wishesBtn.click();
     }
-    
-    // Escape to close modals
-    if (e.key === 'Escape') {
-      const modals = document.querySelectorAll('.modal.active');
-      modals.forEach(modal => modal.classList.remove('active'));
-    }
   });
 }
 
@@ -826,8 +719,41 @@ const style = document.createElement('style');
 style.textContent = `
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  
+  /* Prevent text selection on mobile */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection in specific elements */
+  .wish-text, .tree-message, .credits {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
 `;
 document.head.appendChild(style);
+
+// Handle mobile touch events better
+document.addEventListener('touchstart', function(e) {
+  if (e.touches.length > 1) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// Handle orientation change
+window.addEventListener('orientationchange', function() {
+  // Force resize after orientation change
+  setTimeout(function() {
+    if (window.innerWidth !== window.visualViewport.width) {
+      window.dispatchEvent(new Event('resize'));
+    }
+  }, 100);
+});
