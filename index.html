@@ -203,6 +203,7 @@
     // Accessibility: allow Enter on focused buttons
     [playBtn,toggleSnowBtn].forEach(btn=>btn.addEventListener('keyup',e=>{if(e.key==='Enter')btn.click()}));
   </script>
+    <style>
      /* floating hearts */
     .heart{position:fixed;bottom:-20px;font-size:20px;animation:floatUp 6s linear infinite;opacity:0.9}
     @keyframes floatUp{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-120vh) scale(1.8);opacity:0}}
@@ -222,4 +223,5 @@
   </script>
 </body>
 </html>
+
 
